@@ -6,8 +6,6 @@ import app.model.TaskSubmitter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 /**
  * @author Oleksandr Haleta
@@ -19,11 +17,12 @@ public class FixedThreadPool implements IExecutorService {
     private final int maximumPoolSize = 16;
     private final TaskSubmitter taskSubmitter = new TaskSubmitter();
     private Set<Thread> threadPool;
+    private int countWorkingThreads;
+    private boolean isShutdown;
 
     public FixedThreadPool(int poolSize) {
         this.poolSize = poolSize;
         createThreadPool(poolSize);
-        startTasksInThreadPool();
     }
 
     private void createThreadPool(int poolSize) {
@@ -32,22 +31,25 @@ public class FixedThreadPool implements IExecutorService {
         }
         threadPool = new HashSet<>(poolSize, 1.1f);
         for (int i = 0; i < poolSize; i++) {
-            try {
-                threadPool.add(new Thread(taskSubmitter.getTask()));
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Cannot run new task.");
+            //threadPool.add(new Thread(taskSubmitter.getTask()));
+            threadPool.add(new Thread());
+        }
+
+        for (Thread thread : threadPool) {
+            if (isFree(thread)) {
+                thread.start();
             }
         }
     }
 
-    private void startTasksInThreadPool() {
-        threadPool.forEach(Thread::start);
+    public boolean isFree(Thread thread) {
+        Thread.State currState = thread.getState();
+        return (currState == Thread.State.NEW && thread.isAlive());
     }
-
 
     @Override
     public void shutdown() {
-
+        isShutdown = true;
     }
 
     @Override
@@ -57,7 +59,7 @@ public class FixedThreadPool implements IExecutorService {
 
     @Override
     public boolean isShutdown() {
-        return false;
+        return isShutdown;
     }
 
     @Override
@@ -67,7 +69,42 @@ public class FixedThreadPool implements IExecutorService {
 
     @Override
     public void execute(Runnable command) {
-        //put the given command in a thread
+        if (command == null) {
+            try {
+                boolean isEstablishedThread = proceedFromTaskSubmitter();
+                if (isEstablishedThread) {
+                    countWorkingThreads--;
+                }
+                return;
+            } catch (InterruptedException e) {
+                throw new RuntimeException("argbv");
+            }
+
+        }
+        Thread thread = null;
+        if (countWorkingThreads < threadPool.size()) {
+            thread = new Thread(command);
+            thread.start();
+            countWorkingThreads++;
+            if (!thread.isAlive()) {
+                countWorkingThreads--;
+            }
+        } else {
+            try {
+                taskSubmitter.addTask(command);
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Cannot add task to TaskSubmitter.");
+            }
+        }
+    }
+
+    private boolean proceedFromTaskSubmitter() throws InterruptedException {
+        if (taskSubmitter.getSize() > 0) {
+            new Thread(taskSubmitter.getTask()).start();
+            countWorkingThreads++;
+            return true;
+        }
+        return false;
     }
 
     private boolean isMoreThenMaximumPoolSize(int newCapacity) {
@@ -76,5 +113,10 @@ public class FixedThreadPool implements IExecutorService {
 
     public static void main(String[] args) {
         FixedThreadPool threadPool = new FixedThreadPool(4);
+        int count = 0;
+        for (int i = 0; i < 10; i++) {
+            threadPool.execute(new Test(++count));
+        }
+        threadPool.shutdown();
     }
 }

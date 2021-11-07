@@ -6,8 +6,8 @@ package app.model;
  */
 public class AppThread extends Thread {
 
-    public boolean isFree() {
-        Thread.State currState = Thread.currentThread().getState();
+    public boolean isFree(Thread thread) {
+        Thread.State currState = thread.getState();
         return (currState == Thread.State.NEW && this.isAlive());
     }
 }
