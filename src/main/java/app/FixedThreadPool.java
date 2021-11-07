@@ -1,6 +1,7 @@
 package app;
 
 import app.exceptions.TooManyThreadsException;
+import app.model.TaskSubmitter;
 
 import java.util.HashSet;
 import java.util.List;
@@ -16,21 +17,31 @@ public class FixedThreadPool implements IExecutorService {
 
     private final int poolSize;
     private final int maximumPoolSize = 16;
-    private final int taskPoolCapacity = 64;
-    private BlockingQueue<Runnable> taskPool = new ArrayBlockingQueue<>(taskPoolCapacity);
-    private Set<Runnable> threadPool;
+    private final TaskSubmitter taskSubmitter = new TaskSubmitter();
+    private Set<Thread> threadPool;
 
     public FixedThreadPool(int poolSize) {
         this.poolSize = poolSize;
         createThreadPool(poolSize);
+        startTasksInThreadPool();
     }
 
     private void createThreadPool(int poolSize) {
-        if (!isLessThenMaximumPoolSize(poolSize)) {
+        if (isMoreThenMaximumPoolSize(poolSize)) {
             throw new TooManyThreadsException("The capacity " + poolSize + " is too large.");
         }
         threadPool = new HashSet<>(poolSize, 1.1f);
-        threadPool.stream().limit(poolSize).forEach(i -> new Thread());
+        for (int i = 0; i < poolSize; i++) {
+            try {
+                threadPool.add(new Thread(taskSubmitter.getTask()));
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Cannot run new task.");
+            }
+        }
+    }
+
+    private void startTasksInThreadPool() {
+        threadPool.forEach(Thread::start);
     }
 
 
@@ -59,7 +70,11 @@ public class FixedThreadPool implements IExecutorService {
         //put the given command in a thread
     }
 
-    private boolean isLessThenMaximumPoolSize(int newCapacity) {
-        return newCapacity < maximumPoolSize;
+    private boolean isMoreThenMaximumPoolSize(int newCapacity) {
+        return newCapacity > maximumPoolSize;
+    }
+
+    public static void main(String[] args) {
+        FixedThreadPool threadPool = new FixedThreadPool(4);
     }
 }

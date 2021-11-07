@@ -8,6 +8,6 @@ public class AppThread extends Thread {
 
     public boolean isFree() {
         Thread.State currState = Thread.currentThread().getState();
-        return (currState != Thread.State.NEW && this.isAlive());
+        return (currState == Thread.State.NEW && this.isAlive());
     }
 }
