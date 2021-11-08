@@ -1,7 +1,5 @@
 package app.model;
 
-import app.Test;
-
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -9,20 +7,33 @@ import java.util.concurrent.BlockingQueue;
  * @author Oleksandr Haleta
  * 2021
  */
-public class TaskSubmitter {
+public class TaskSubmitter implements Submitter {
 
     private final int taskPoolCapacity = 64;
-    private BlockingQueue<Runnable> taskPool = new ArrayBlockingQueue<>(taskPoolCapacity);
+    private final BlockingQueue<Runnable> taskStore = new ArrayBlockingQueue<>(taskPoolCapacity);
 
+    @Override
     public int getSize() {
-        return taskPool.size();
+        return taskStore.size();
     }
 
+    @Override
+    public BlockingQueue<Runnable> getStore() {
+        return taskStore;
+    }
+
+    @Override
+    public void clearStore() {
+        taskStore.clear();
+    }
+
+    @Override
     public void addTask(Runnable task) throws InterruptedException {
-        taskPool.put(task);
+        taskStore.put(task);
     }
 
+    @Override
     public Runnable getTask() throws InterruptedException {
-        return taskPool.take();
+        return taskStore.take();
     }
 }
