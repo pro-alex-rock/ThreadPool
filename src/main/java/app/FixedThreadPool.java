@@ -1,6 +1,7 @@
 package app;
 
 import app.exceptions.TooManyThreadsException;
+import app.model.FTPool;
 import app.model.TaskSubmitter;
 
 import java.util.HashSet;
@@ -112,11 +113,17 @@ public class FixedThreadPool implements IExecutorService {
     }
 
     public static void main(String[] args) {
-        FixedThreadPool threadPool = new FixedThreadPool(4);
+        /*FixedThreadPool threadPool = new FixedThreadPool(4);
         int count = 0;
         for (int i = 0; i < 10; i++) {
             threadPool.execute(new Test(++count));
         }
-        threadPool.shutdown();
+        threadPool.shutdown();*/
+
+        FTPool ftPool = new FTPool(4);
+        int count = 0;
+        for (int i = 0; i < 10; i++) {
+            ftPool.execute(new Test(++count));
+        }
     }
 }
