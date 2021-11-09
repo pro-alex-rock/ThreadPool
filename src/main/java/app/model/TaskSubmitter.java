@@ -9,8 +9,12 @@ import java.util.concurrent.BlockingQueue;
  */
 public class TaskSubmitter implements Submitter {
 
-    private final int taskPoolCapacity = 64;
+    private int taskPoolCapacity = 64;
     private final BlockingQueue<Runnable> taskStore = new ArrayBlockingQueue<>(taskPoolCapacity);
+
+    public void setTaskPoolCapacity(int newCapacity) {
+        taskPoolCapacity = newCapacity;
+    }
 
     @Override
     public int getSize() {

@@ -16,8 +16,8 @@ public class FixedThreadPool implements IExecutorService {
 
     private static final int MAXIMUM_POOL_SIZE = 16;
     private final Submitter taskSubmitter = new TaskSubmitter();
-    private boolean isShutdownNow;
-    private boolean isShutdown;
+    private volatile boolean isShutdownNow;
+    private volatile boolean isShutdown;
 
     public FixedThreadPool(int poolSize) {
         if (isMoreThenMaximumPoolSize(poolSize)) {
