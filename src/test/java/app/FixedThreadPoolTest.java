@@ -75,6 +75,39 @@ class FixedThreadPoolTest {
         assertTrue(threadPool.isTerminated());
     }
 
+    @Test
+    public void whenNotShutdownNowThenIsTerminatedFalse() {
+        threadPool.execute(new Task(1));
+        assertFalse(threadPool.isTerminated());
+    }
+
+    @Test
+    public void whenShutdownThenIsShutdownTrue() {
+        threadPool.execute(new Task(1));
+        threadPool.shutdown();
+        assertTrue(threadPool.isShutdown());
+    }
+
+    @Test
+    public void whenNotShutdownThenIsShutdownFalse() {
+        threadPool.execute(new Task(1));
+        assertFalse(threadPool.isShutdown());
+    }
+
+    @Test
+    public void whenShutdownThenIsTerminatedTrue() throws InterruptedException {
+        threadPool.execute(new Task(1));
+        threadPool.shutdown();
+        Thread.sleep(1000);
+        assertTrue(threadPool.isTerminated());
+    }
+
+    @Test
+    public void whenNotShutdownThenIsTerminatedFalse() {
+        threadPool.execute(new Task(1));
+        assertFalse(threadPool.isTerminated());
+    }
+
     static class Task implements Runnable {
         private int number;
 
