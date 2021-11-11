@@ -7,10 +7,10 @@ import java.util.concurrent.BlockingQueue;
  * @author Oleksandr Haleta
  * 2021
  */
-public class TaskSubmitter implements Submitter {
+public class TaskQueueSubmitter implements Submitter {
 
     private int taskPoolCapacity = 64;
-    private final BlockingQueue<Runnable> taskStore = new ArrayBlockingQueue<>(taskPoolCapacity);
+    private volatile BlockingQueue<Runnable> taskStore = new ArrayBlockingQueue<>(taskPoolCapacity);
 
     public void setTaskPoolCapacity(int newCapacity) {
         taskPoolCapacity = newCapacity;

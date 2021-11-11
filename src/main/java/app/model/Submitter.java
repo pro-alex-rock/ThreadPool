@@ -1,6 +1,6 @@
 package app.model;
 
-import java.util.concurrent.BlockingQueue;
+import java.util.Collection;
 
 /**
  * @author Oleksandr Haleta
@@ -10,7 +10,7 @@ public interface Submitter {
 
     int getSize();
 
-    BlockingQueue<Runnable> getStore();
+    Collection<Runnable> getStore();
 
     void clearStore();
 

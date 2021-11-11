@@ -3,7 +3,7 @@ package app;
 import app.exceptions.TooManyThreadsException;
 import app.model.IExecutorService;
 import app.model.Submitter;
-import app.model.TaskSubmitter;
+import app.model.TaskListSubmitter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
 public class FixedThreadPool implements IExecutorService {
 
     private static final int MAXIMUM_POOL_SIZE = 16;
-    private final Submitter taskSubmitter = new TaskSubmitter();
+    private final Submitter taskSubmitter = new TaskListSubmitter();
     private volatile boolean isShutdownNow;
     private volatile boolean isShutdown;
 
@@ -62,7 +62,7 @@ public class FixedThreadPool implements IExecutorService {
                 taskSubmitter.addTask(command);
             }
         } catch (InterruptedException e) {
-            throw new RuntimeException("Cannot execute this task: " + command.toString(), e);
+            throw new RuntimeException("Cannot execute this task: " + command, e);
         }
     }
 
